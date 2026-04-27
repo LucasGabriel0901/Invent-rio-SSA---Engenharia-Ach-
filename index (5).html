@@ -1,0 +1,275 @@
+<!DOCTYPE html>
+<html lang="pt-br">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Inventário SSA | Engenharia Aché</title>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;800&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+
+    <div id="tela-login-split">
+        <section class="coluna-esquerda">
+            <div class="login-box">
+                <h1>Faça seu login</h1>
+                <div class="input-group-login">
+                    <label>E-mail Corporativo</label>
+                    <input type="text" id="user-field" placeholder="exemplo@ache.com.br">
+                </div>
+                <div class="input-group-login">
+                    <label>Senha</label>
+                    <input type="password" id="pass-field" placeholder="••••••••">
+                </div>
+                <button class="btn-pill" onclick="autenticar()">ENTRAR NO SISTEMA</button>
+            </div>
+        </section>
+        <section class="coluna-direita"></section>
+    </div>
+
+           <div id="hub-modulos" style="display: none;">
+    <div class="branding-hub" style="text-align: center; margin-bottom: 40px;">
+        <div class="logo-ache-grande">ache</div>
+        <p style="color: var(--text-dim); font-weight: 600;">Selecione o módulo de trabalho</p>
+    </div>
+    
+    <div class="grid-modulos" style="display: flex; gap: 25px; justify-content: center;">
+        <div class="card-modulo" onclick="entrarModulo('almoxarifado')">
+            <div class="icon-modulo">📦</div>
+            <h3>Almoxarifado</h3>
+            <p>Estoque e Coletas</p>
+        </div>
+
+        <div class="card-modulo" onclick="entrarModulo('solicitacoes')">
+            <div class="icon-modulo">📝</div>
+            <h3>Solicitações</h3>
+            <p>Serviços e Manutenção</p>
+        </div>
+
+        <div class="card-modulo" onclick="entrarModulo('solicitar_produto')">
+            <div class="icon-modulo">🛒</div>
+            <h3>Solicitar Produto</h3>
+            <p>Novos Pedidos e Insumos</p>
+        </div>
+    </div>
+</div>
+
+    <div id="sistema-principal" style="display: none;">
+        
+        <nav class="sidebar">
+            <div class="branding-sidebar">
+                <div class="logo-ache-grande">ache</div>
+                <div class="subtitulo-engenharia">inventário engenharia SSA</div>
+            </div>
+            <div class="menu-items">
+    <button id="btn-consulta" class="nav-btn menu-almoxarifado" onclick="switchTab('consulta', this)">ESTOQUE</button>
+    <button id="btn-requisicao" class="nav-btn menu-almoxarifado" onclick="switchTab('requisicao', this)">REQUISIÇÕES</button>
+    <button id="btn-coleta" class="nav-btn menu-almoxarifado" onclick="switchTab('coleta', this)">COLETAS</button>
+
+    <button id="btn-solicitacoes" class="nav-btn menu-solicitacoes" onclick="switchTab('solicitacoes', this); renderSolicitacoes();" style="display:none;">PORTAL SERVIÇOS</button>
+
+    <button id="btn-novo-prod" class="nav-btn menu-solicitar-prod" onclick="switchTab('novo-pedido-prod', this)" style="display:none;">FAZER PEDIDO</button>
+    <button id="btn-status-prod" class="nav-btn menu-solicitar-prod" onclick="switchTab('status-pedidos', this)" style="display:none;">MEUS PEDIDOS</button>
+    
+    <button id="btn-gestao" class="nav-btn" onclick="verificarAdmin(this)">ADICIONAR PRODUTO</button>
+</div>
+            <button class="nav-btn logout-fixed" onclick="location.reload()">SAIR</button>
+        </nav>
+
+        <main class="main-content">
+            <header class="top-bar" style="display: flex; justify-content: space-between; align-items: center;">
+    <h1 id="page-title">Consulta de Peças SSA</h1>
+    <div class="user-info" style="font-weight: 800; color: white; background: rgba(0,0,0,0.2); padding: 5px 15px; border-radius: 50px;">
+        👤 Operador: Lucas Gabriel
+    </div>
+         </header>
+
+            <section id="tab-consulta" class="container visible">
+                <div class="search-box-pro">
+                    <input type="text" id="input-busca" onkeyup="filtrarTabela('corpo-consulta', this.value)" placeholder="🔎 Pesquisar no estoque...">
+                </div>
+                <div class="table-card">
+                    <table>
+                        <thead>
+                            <tr><th>CÓDIGO</th><th>DESCRIÇÃO</th><th>LOCALIZAÇÃO</th><th>QTD</th><th>STATUS</th></tr>
+                        </thead>
+                        <tbody id="corpo-consulta"></tbody>
+                    </table>
+                </div>
+            </section>
+
+            <section id="tab-requisicao" class="container" style="display: none;">
+    <div class="search-box-pro" style="display: flex; gap: 10px; flex-wrap: wrap;">
+        <input type="text" id="input-busca-req" onkeyup="filtrarTabela('corpo-requisicoes', this.value)" placeholder="🔎 Filtrar por nome ou ordem..." style="flex: 2;">
+        
+        <input type="date" id="data-inicio" style="flex: 1;">
+        <input type="date" id="data-fim" style="flex: 1;">
+        <button onclick="filtrarPorPeriodo()" class="btn-nova-coleta-topo" style="height: 55px; margin-top: 0;">Filtrar Data</button>
+    </div>
+
+            <div class="action-footer">
+    <button class="btn-pill-new-req" onclick="abrirNovaRequisicao()">+ NOVA REQUISIÇÃO</button>
+</div>
+    
+    <div class="table-card">
+        <table>
+            <thead>
+                <tr><th>REQUISITANTE</th><th>DATA</th><th>ORDEM</th><th>DEPARTAMENTO</th></tr>
+            </thead>
+            <tbody id="corpo-requisicoes"></tbody>
+        </table>
+    </div>
+    </section>
+
+            
+            <section id="tab-gestao" class="container" style="display: none;">
+    <div class="form-gestao-card">
+        <h3 style="color: var(--magenta); margin-bottom: 20px;">📦 Cadastrar Novo Material</h3>
+        <div class="form-grid-adm">
+            <div class="group"><label>Código SAP</label><input type="text" id="f-cod"></div>
+            <div class="group"><label>Descrição Curta</label><input type="text" id="f-desc"></div>
+            <div class="group"><label>Unidade (U.M)</label><input type="text" id="f-unidade" placeholder="PC"></div>
+            <div class="group"><label>Família</label><input type="text" id="f-familia"></div>
+            <div class="group"><label>Quantidade</label><input type="number" id="f-qtd"></div>
+            <div class="group"><label>Localização</label><input type="text" id="f-loc"></div>
+            <div class="group full-width"><label>Especificação Técnica</label><textarea id="f-espec" style="height: 80px;"></textarea></div>
+        </div>
+        <button class="btn-pill-save" onclick="salvarNovoProduto()">✨ SALVAR NOVO PRODUTO</button>
+    </div>
+
+    <div class="table-card" style="margin-top: 30px;">
+        <table>
+            <thead>
+                <tr><th>CÓDIGO</th><th>DESCRIÇÃO</th><th>AÇÕES</th></tr>
+            </thead>
+            <tbody id="corpo-adm"></tbody>
+        </table>
+    </div>
+</section>
+              
+        <section id="tab-novo-pedido-prod" class="container" style="display: none;">
+    <div class="form-gestao-card">
+        <div class="panel-header-pro">
+            <h2 style="color: var(--magenta);">🛒 Abrir Nova Solicitação de Produto</h2>
+            <p style="color: var(--text-dim); font-size: 0.8rem; margin-bottom: 25px;">
+                Preencha os detalhes para análise do setor de Compras SSA.
+            </p>
+        </div>
+
+        <div class="form-grid-adm">
+            <div class="group">
+                <label>Nome do Solicitante</label>
+                <input type="text" id="p-solicitante" value="Lucas Gabriel" readonly style="opacity: 0.7;">
+            </div>
+            <div class="group">
+                <label>Centro de Custo</label>
+                <input type="text" id="p-cc" placeholder="Ex: 4500 - Engenharia">
+            </div>
+            <div class="group">
+                <label>Urgência</label>
+                <select id="p-urgencia">
+                    <option value="C">Baixa (C)</option>
+                    <option value="B">Média (B)</option>
+                    <option value="A">Alta (A)</option>
+                </select>
+            </div>
+
+            <div class="group full-width">
+                <label>Descrição Detalhada do Produto/Insumo</label>
+                <textarea id="p-desc" style="height: 80px;" placeholder="Descreva o material e especificações..."></textarea>
+            </div>
+
+            <div class="group">
+                <label>Quantidade Necessária</label>
+                <input type="number" id="p-qtd" value="1">
+            </div>
+            <div class="group">
+                <label>Finalidade</label>
+                <input type="text" id="p-finalidade" placeholder="Ex: Reposição">
+            </div>
+        </div>
+
+        <div style="margin-top: 30px;">
+            <button class="btn-pill-save" onclick="enviarParaModuloSolicitacao()">🚀 ENVIAR SOLICITAÇÃO</button>
+        </div>
+    </div>
+</section>
+               
+            <section id="tab-coleta" class="container" style="display: none; padding: 20px;">
+    <div style="display: flex; gap: 30px; align-items: flex-start;">
+        
+        <div style="flex: 2;">
+            <header style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 25px;">
+                <h3 style="color: #ff8008; font-weight: 800;">🕒 Aguardando Coleta</h3>
+                <button class="btn-nova-coleta-topo" onclick="abrirModalColeta()">+ NOVA COLETA</button>
+                <div class="search-box-pro" style="margin-top: 20px;">
+    <input type="text" id="input-busca-coleta" 
+           onkeyup="filtrarColetas(this.value)" 
+           placeholder="🔎 Pesquisar por Solicitante ou Pedido...">
+</div>
+            </header>
+            
+            <div id="grid-coletas-pendentes" style="display: grid; grid-template-columns: repeat(auto-fill, minmax(240px, 1fr)); gap: 15px;">
+                </div>
+        </div>
+
+        <div style="flex: 1; background: rgba(255,255,255,0.02); border-radius: 20px; padding: 20px; border: 1px solid rgba(255,255,255,0.05); height: 80vh; display: flex; flex-direction: column;">
+            <header style="margin-bottom: 20px; border-bottom: 1px solid #333; padding-bottom: 10px;">
+                <h3 style="color: #22c55e; font-weight: 800; font-size: 1rem;">✅ Coletado (Histórico)</h3>
+            </header>
+            
+            <div id="grid-coletas-concluidas" style="flex-grow: 1; overflow-y: auto; padding-right: 10px;">
+                </div>
+                    </div>
+
+             </div>
+        </section>
+             
+            <div id="panel-sistema" class="panel-detalhes">
+            <button class="btn-close-panel" onclick="fecharPainel()">×</button>
+            <div id="conteudo-painel" class="panel-inner-content">
+                </div>
+        </div>
+
+        <div id="modal-coleta" class="panel-detalhes modal-center-fix">
+            <button class="btn-close-panel" onclick="fecharModalColeta()">×</button>
+            <div class="panel-inner-content">
+                <h2 style="color: var(--magenta); margin-bottom: 20px;">📦 Nova Solicitação de Coleta</h2>
+                
+                <div style="display: flex; gap: 30px; flex-wrap: wrap;">
+                    <div style="flex: 1; min-width: 300px;">
+                        <h3 class="label">📄 Dados do Pedido</h3>
+                        <div class="form-grid-adm" style="grid-template-columns: 1fr; gap: 10px;">
+                            <div class="group"><label>Nº Pedido</label><input type="text" id="c-pedido"></div>
+                            <div class="group"><label>Fornecedor</label><input type="text" id="c-fornecedor"></div>
+                            <div class="group"><label>Solicitante</label><input type="text" id="c-solicitante"></div>
+                            <div class="group"><label>Requisitante</label><input type="text" id="c-requisitante"></div>
+                        </div>
+
+                        <h3 class="label" style="margin-top: 20px;">➕ Adicionar Material</h3>
+                        <div style="background: rgba(0,0,0,0.2); padding: 15px; border-radius: 10px;">
+                            <input type="text" id="temp-desc" placeholder="Descrição do Item">
+                            <input type="text" id="temp-cod" placeholder="Código">
+                            <input type="number" id="temp-qtd" value="1">
+                            <div><p style="text-align:center; color:#475569;">Nenhum item adicionado.</p>
+                                <input type="text" id="temp-cod" placeholder="Código" style="flex:2;">
+                                <input type="number" id="temp-qtd" value="1" style="flex:1;">
+                            </div>
+                            <button class="btn-pill-save" style="background:#22c55e; margin-top:10px;" onclick="adicionarMaterialLista()">ADICIONAR ITEM</button>
+                        </div>
+                    </div>
+
+                    <div style="flex: 1; min-width: 300px; background: rgba(255,255,255,0.02); border-radius: 15px; padding: 20px; border: 1px solid #333; position: relative;">
+                        <h3 class="label">🛒 Materiais no Pedido</h3>
+                        <div id="lista-materiais-coleta" style="max-height: 300px; overflow-y: auto; margin-top:10px;">
+                            <p style="text-align:center; color:#475569;">Nenhum item adicionado.</p>
+                        </div>
+                        <button class="btn-pill-save" style="width:100%; margin-top: 30px;" onclick="salvarNovaColeta()">CONCLUIR SOLICITAÇÃO</button>
+                    </div>
+                </div>
+            </div>
+        </div>
+      
+    <script src="script.js"></script> 
+</body>
+</html>

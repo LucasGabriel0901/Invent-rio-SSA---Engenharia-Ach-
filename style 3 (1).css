@@ -1,0 +1,346 @@
+/* Esconde o sistema principal por padrão e força a visibilidade do login */
+
+
+#tela-login-split {
+    display: flex !important;
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100vw;
+    height: 100vh;
+    z-index: 5000; /* Fica por cima de tudo */
+    background: #000;
+}
+
+
+
+/* Sistema Principal: Fica logo abaixo do login */
+#sistema-principal { 
+    display: none; /* JS muda para 'flex' no login */
+    width: 100vw; 
+    height: 100vh; 
+    position: fixed;
+    top: 0;
+    left: 0;
+    z-index: 1000; 
+    background: var(--dark-base);
+}
+
+/* ============================================================
+
+   1. DESIGN SYSTEM & VARIÁVEIS
+   ============================================================ */
+:root {
+    --magenta: #E10098;
+    --gradiente: linear-gradient(90deg, #8e2de2 0%, #ff8008 100%);
+    --dark-base: #0f172a;
+    --dark-card: #1e293b;
+    --sidebar-bg: #111827;
+    --text-dim: #94a3b8;
+}
+
+* { margin: 0; padding: 0; box-sizing: border-box; }
+body { font-family: 'Inter', sans-serif; background: #000; color: white; overflow: hidden; height: 100vh; }
+
+/* ============================================================
+   2. TELA DE LOGIN (SPLIT SCREEN)
+   ============================================================ */
+#tela-login-split { display: flex; width: 100vw; height: 100vh; position: fixed; z-index: 1000; }
+.coluna-esquerda { flex: 1; background: #000; display: flex; justify-content: center; align-items: center; padding: 40px; }
+.coluna-direita { flex: 1; background: url('https://ohtake.com.br/wp-content/uploads/2022/03/08728hr090325_019d.jpg') center/cover; position: relative; }
+.coluna-direita::after { content: ""; position: absolute; inset: 0; background: linear-gradient(to right, #000 0%, transparent 100%); }
+
+.login-box h1 { font-size: 2.5rem; margin-bottom: 30px; font-weight: 800; }
+.input-group-login label { display: block; color: var(--text-dim); margin-bottom: 8px; font-size: 0.9rem; }
+.input-group-login input { 
+    width: 100%; padding: 16px; background: #1a1a1a; border: 1px solid #333; 
+    border-radius: 12px; color: white; margin-bottom: 20px; outline: none; 
+}
+.btn-pill { width: 100%; padding: 16px; border-radius: 50px; background: var(--gradiente); border: none; color: white; font-weight: 800; cursor: pointer; }
+
+/* ============================================================
+   3. SISTEMA PRINCIPAL & SIDEBAR
+   ============================================================ */
+#sistema-principal { display: none; width: 100vw; height: 100vh; background: var(--dark-base); }
+.sidebar { width: 280px; background: var(--sidebar-bg); padding: 2rem; border-right: 1px solid rgba(255,255,255,0.05); flex-shrink: 0; position: relative; }
+
+.logo-ache-grande { font-size: 4rem; font-weight: 900; color: var(--magenta); text-align: center; letter-spacing: -4px; line-height: 1; }
+.subtitulo-engenharia { text-align: center; margin-bottom: 3rem; background: var(--gradiente); -webkit-background-clip: text; -webkit-text-fill-color: transparent; font-weight: 800; font-size: 0.8rem; text-transform: uppercase; }
+
+.nav-btn { width: 100%; padding: 14px; background: transparent; border: none; color: var(--text-dim); text-align: left; cursor: pointer; border-radius: 10px; margin-bottom: 10px; font-weight: 600; transition: 0.3s; }
+.nav-btn.active { background: rgba(225, 0, 152, 0.1); color: white; border-left: 4px solid var(--magenta); }
+.logout-fixed { position: absolute; bottom: 30px; left: 20px; width: calc(100% - 40px) !important; color: var(--magenta) !important; border: 1px solid var(--magenta) !important; border-radius: 10px; padding: 10px; text-align: center; background: none; cursor: pointer; }
+
+/* ============================================================
+   4. CONTEÚDO, BARRAS DE BUSCA E TABELAS
+   ============================================================ */
+.main-content { flex: 1; display: flex; flex-direction: column; overflow: hidden; position: relative; }
+.top-bar { background: var(--magenta); padding: 1.2rem 3rem; flex-shrink: 0; }
+
+.container { padding: 30px; display: none; overflow-y: auto; height: 100%; }
+.visible { display: block !important; }
+
+.search-box-pro input { 
+    width: 100%; padding: 18px 25px; background: var(--dark-card); 
+    border: 2px solid rgba(255,255,255,0.05); border-radius: 20px; color: white; 
+    outline: none; margin-bottom: 2rem; transition: 0.3s;
+}
+.search-box-pro input:focus { border-color: var(--magenta); box-shadow: 0 0 20px rgba(225, 0, 152, 0.15); }
+
+.table-card { background: var(--dark-card); border-radius: 20px; overflow: hidden; border: 1px solid rgba(255,255,255,0.05); }
+table { width: 100%; border-collapse: collapse; }
+th { background: rgba(0,0,0,0.2); padding: 1.2rem; text-align: left; color: var(--text-dim); font-size: 0.8rem; text-transform: uppercase; }
+td { padding: 1.2rem; border-bottom: 1px solid #334155; }
+tr:hover { background: rgba(225, 0, 152, 0.05); cursor: pointer; }
+
+/* ============================================================
+   5. PAINEL DESLIZANTE (DRAWER) E CARDS DE DETALHES
+   ============================================================ */
+.panel-detalhes { 
+    position: fixed; top: 0; right: -100%; width: 500px; 
+    height: 100vh; background: var(--dark-base); 
+    transition: right 0.5s cubic-bezier(0.23, 1, 0.32, 1); 
+    padding: 50px 30px; z-index: 2000; box-shadow: -20px 0 50px rgba(0,0,0,0.8); 
+    overflow-y: auto;
+}
+.panel-detalhes.active { right: 0; }
+.btn-close-panel { position: absolute; top: 20px; right: 20px; background: none; border: none; color: white; font-size: 2.5rem; cursor: pointer; }
+
+.panel-header-pro h2 { margin-bottom: 5px; }
+.details-grid-pro { display: grid; grid-template-columns: 1fr 1fr; gap: 15px; margin-top: 30px; }
+.pro-card { background: var(--dark-card); padding: 15px; border-radius: 12px; border: 1px solid rgba(255,255,255,0.03); }
+.full-width { grid-column: span 2; }
+.pro-card label { display: block; font-size: 0.65rem; text-transform: uppercase; color: var(--text-dim); margin-bottom: 5px; }
+.pro-card p { font-weight: 700; color: white; }
+.highlight p { color: var(--magenta); }
+.qtd-box { background: linear-gradient(135deg, var(--dark-card) 0%, rgba(225, 0, 152, 0.1) 100%); }
+.qtd-box p { font-size: 2rem; color: var(--magenta); }
+
+/* ============================================================
+   6. REQUISIÇÕES: FLUXO DE AVATARES E MATERIAIS
+   ============================================================ */
+.users-flow-pro { display: flex; justify-content: space-between; align-items: center; background: var(--dark-card); padding: 20px; border-radius: 15px; margin-bottom: 20px; }
+.u-box { display: flex; flex-direction: column; align-items: center; gap: 10px; flex: 1; }
+.avatar, .av-pro { width: 50px; height: 50px; border-radius: 50%; background: var(--magenta); display: flex; align-items: center; justify-content: center; font-weight: 800; font-size: 1.2rem; box-shadow: 0 5px 15px rgba(225,0,152,0.3); }
+.u-arrow { font-size: 1.5rem; color: var(--magenta); }
+
+/* Inputs de nome dentro do fluxo */
+.input-req-atend {
+    background: transparent !important;
+    border: none !important;
+    border-bottom: 1px solid var(--magenta) !important;
+    color: white;
+    text-align: center;
+    font-size: 0.85rem;
+    width: 90%;
+    outline: none;
+    margin-top: 5px;
+}
+
+/* Lista de Materiais Retirados (Visualização) */
+.materials-list-pro { margin-top: 20px; background: rgba(0,0,0,0.2); padding: 15px; border-radius: 10px; }
+.mat-item-pro { padding: 8px 0; border-bottom: 1px solid rgba(255,255,255,0.05); color: #cbd5e1; font-size: 0.9rem; }
+
+
+/* Layout de Colunas para Coleta */
+.coleta-layout { display: grid; grid-template-columns: 2fr 1fr; gap: 20px; }
+.grid-coletas { display: grid; grid-template-columns: repeat(auto-fill, minmax(220px, 1fr)); gap: 15px; }
+
+/* Card de Coleta Estilo PowerApps */
+.card-coleta {
+    background: var(--dark-card);
+    border-radius: 12px;
+    padding: 15px;
+    border-left: 8px solid #ccc; /* Cor dinâmica via JS */
+    transition: 0.3s;
+    position: relative;
+}
+
+.card-coleta h4 { font-size: 0.8rem; color: var(--text-dim); margin-bottom: 10px; }
+.card-coleta .solicitante { font-weight: 800; font-size: 0.9rem; margin-bottom: 5px; display: block; }
+.card-coleta .data-rec { font-size: 0.7rem; color: var(--text-dim); }
+.card-coleta .pedido { 
+    margin-top: 15px; background: rgba(0,0,0,0.3); padding: 8px; 
+    border-radius: 5px; font-size: 0.8rem; font-weight: 800; color: var(--magenta);
+}
+
+/* Badge de Urgência (Foguinho ou Relógio) */
+.icon-urgencia { position: absolute; top: 10px; right: 10px; font-size: 1rem; }
+
+/* ============================================================
+   7. GESTÃO ADM & COMPONENTES GERAIS
+   ============================================================ */
+.form-gestao-card { background: var(--dark-card); padding: 2.5rem; border-radius: 20px; margin-bottom: 2rem; }
+.form-grid-adm { display: grid; grid-template-columns: repeat(3, 1fr); gap: 15px; }
+.form-grid-adm .group { display: flex; flex-direction: column; gap: 5px; }
+.form-grid-adm label { font-size: 0.75rem; color: var(--text-dim); text-transform: uppercase; }
+.form-grid-adm input, .form-grid-adm textarea { 
+    padding: 12px; background: rgba(0,0,0,0.2); border: 1px solid #334155; 
+    border-radius: 10px; color: white; outline: none; width: 100%;
+}
+.btn-pill-save { margin-top: 20px; padding: 15px 40px; border-radius: 50px; background: var(--gradiente); border: none; color: white; font-weight: 800; cursor: pointer; width: 100%; }
+
+.badge { padding: 5px 12px; border-radius: 20px; font-size: 11px; font-weight: 700; text-transform: uppercase; }
+.bg-ok { background: rgba(34, 197, 94, 0.15); color: #22c55e; }
+.bg-empty { background: rgba(239, 68, 68, 0.15); color: #ef4444; }
+
+.action-footer { position: absolute; bottom: 30px; width: 100%; display: flex; justify-content: center; left: 0; }
+.btn-pill-new-req { padding: 15px 40px; border-radius: 50px; background: var(--magenta); color: white; font-weight: 800; border: none; cursor: pointer; box-shadow: 0 10px 20px rgba(0,0,0,0.3); transition: 0.3s; }
+.btn-pill-new-req:hover { transform: scale(1.05); filter: brightness(1.1); }
+.btn-icon { background: none; border: none; cursor: pointer; font-size: 1.2rem; }
+/* MODAL DE COLETA - VERSÃO DESTRANCADA */
+#modal-coleta {
+    position: fixed;
+    top: 7.5vh;
+    left: 5%;
+    width: 90%;
+    height: 85vh;
+    background-color: #111827;
+    border: 2px solid var(--magenta);
+    border-radius: 20px;
+    box-shadow: 0 0 100px rgba(0,0,0,0.9);
+    z-index: 3000;
+    
+    /* ESTADO INICIAL: Escondido e o mouse ignora */
+    opacity: 0;
+    pointer-events: none; 
+    transform: scale(0.9);
+    transition: all 0.3s ease-in-out;
+    display: block !important; /* Mantém no DOM, mas invisível */
+}
+
+/* QUANDO ATIVO: Aparece e aceita cliques */
+#modal-coleta.active {
+    opacity: 1;
+    pointer-events: all; 
+    transform: scale(1);
+}
+
+/* GAVETA DE DETALHES (PANEL SISTEMA) - Garantia de funcionamento */
+#panel-sistema {
+    z-index: 2000; /* Abaixo do modal, mas acima das tabelas */
+    pointer-events: none;
+    right: -100%;
+}
+
+#panel-sistema.active {
+    pointer-events: all;
+    right: 0;
+}
+
+/* RESET DE INPUTS PARA TEMA ESCURO ACHÉ */
+#sistema-principal input, 
+#sistema-principal textarea, 
+.panel-detalhes input {
+    background-color: #1e293b !important;
+    border: 1px solid #334155 !important;
+    color: #ffffff !important;
+    padding: 12px !important;
+    border-radius: 10px !important;
+    font-family: 'Inter', sans-serif;
+}
+
+/* BOTÃO NOVA COLETA NO TOPO DIREITO */
+.btn-nova-coleta-topo {
+    background: linear-gradient(135deg, #E10098 0%, #ff8008 100%);
+    color: white;
+    border: none;
+    padding: 10px 20px;
+    border-radius: 50px;
+    font-weight: 800;
+    font-size: 0.75rem;
+    cursor: pointer;
+    box-shadow: 0 4px 15px rgba(225, 0, 152, 0.3);
+    transition: 0.3s;
+}
+
+.btn-nova-coleta-topo:hover {
+    transform: translateY(-2px);
+    filter: brightness(1.1);
+}
+
+/* FORÇA O TEMA ESCURO EM TUDO QUE FOR CAMPO DE TEXTO */
+input, textarea, select {
+    background-color: #1e293b !important;
+    color: white !important;
+    border: 1px solid #334155 !important;
+}
+
+/* Botão Nova Coleta */
+.btn-nova-coleta {
+    background: linear-gradient(135deg, #E10098 0%, #ff8008 100%) !important;
+    color: white !important;
+    border: none !important;
+    padding: 10px 20px !important;
+    border-radius: 50px !important;
+    cursor: pointer !important;
+    font-weight: 800 !important;
+}
+
+/* FORÇAR TEMA ESCURO EM TODOS OS CAMPOS DO SISTEMA */
+#sistema-principal input, 
+#sistema-principal textarea, 
+#sistema-principal select,
+.panel-detalhes input,
+.panel-detalhes textarea {
+    background-color: #1e293b !important;
+    color: #ffffff !important;
+    border: 1px solid #334155 !important;
+    padding: 12px !important;
+    border-radius: 10px !important;
+    outline: none !important;
+}
+
+/* Ajuste do botão de Nova Coleta no Topo */
+.btn-nova-coleta-topo {
+    background: linear-gradient(135deg, #E10098 0%, #ff8008 100%) !important;
+    color: white !important;
+    border: none !important;
+    padding: 10px 20px !important;
+    border-radius: 50px !important;
+    font-weight: 800;
+    cursor: pointer;
+    box-shadow: 0 4px 15px rgba(225, 0, 152, 0.3);
+}
+
+/* Customização da barra de rolagem do Histórico */
+#grid-coletas-concluidas::-webkit-scrollbar {
+    width: 6px;
+}
+#grid-coletas-concluidas::-webkit-scrollbar-thumb {
+    background: #334155;
+    border-radius: 10px;
+}
+#grid-coletas-concluidas::-webkit-scrollbar-thumb:hover {
+    background: var(--magenta);
+}
+
+#hub-modulos {
+    width: 100vw; height: 100vh;
+    background: var(--dark-base);
+    display: flex; flex-direction: column;
+    justify-content: center; align-items: center;
+    position: fixed; top: 0; left: 0; z-index: 4000;
+}
+
+.grid-modulos {
+    display: flex; gap: 30px; margin-top: 40px;
+}
+
+.card-modulo {
+    background: var(--dark-card);
+    width: 280px; padding: 40px 20px;
+    border-radius: 20px; text-align: center;
+    cursor: pointer; border: 2px solid transparent;
+    transition: 0.3s;
+}
+
+.card-modulo:hover {
+    border-color: var(--magenta);
+    transform: translateY(-10px);
+    box-shadow: 0 10px 30px rgba(225, 0, 152, 0.2);
+}
+
+.icon-modulo { font-size: 3rem; margin-bottom: 20px; }
+.card-modulo h3 { color: var(--magenta); margin-bottom: 10px; }
+.card-modulo p { font-size: 0.8rem; color: var(--text-dim); }
